@@ -136,9 +136,9 @@ Deployment is the beginning of the operational journey, not the end. The hard-wo
 
 | | |
 |---|---|
-| **Current version** | v1.1 |
-| **Published** | September 2026 |
-| **Format** | PDF (English), 114 pages · Markdown (this repository) |
+| **Current version** | v1.2 |
+| **Published** | October 2026 |
+| **Format** | PDF (English, 114 pages; French, 125 pages) · Markdown (this repository) |
 | **Download** | **[Latest release →](https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/latest)** |
 
 The PDF is distributed exclusively through the [Releases](https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases) page of this repository. Each version is tagged, dated and accompanied by release notes. Previous versions remain available. See [CHANGELOG.md](CHANGELOG.md) for the history of changes.
@@ -164,7 +164,7 @@ For uses not covered by the licence — translations into other languages, excer
 
 ## Citing this book
 
-> Zaouam, S. (2026). *OpenStack, the Day After Tomorrow: Operating Mission-Critical OpenStack Platforms* (v1.1). https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow
+> Zaouam, S. (2026). *OpenStack, the Day After Tomorrow: Operating Mission-Critical OpenStack Platforms* (v1.2). https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow
 
 A machine-readable citation is provided in [CITATION.cff](CITATION.cff).
 

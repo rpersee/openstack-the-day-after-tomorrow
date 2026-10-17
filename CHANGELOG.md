@@ -9,7 +9,7 @@ Versioning scheme:
 - **Minor** (`v1.1`): revised or expanded sections, new figures, corrections that change the technical content.
 - Simple typo fixes are batched into the next minor version rather than released on their own.
 
-## [Unreleased]
+## [v1.2] — 2026-10-17
 
 French edition of the book, *OpenStack, après-demain : exploiter des plateformes OpenStack critiques*, maintained in this repository alongside the original. Same text, same structure, same version number.
 
@@ -37,6 +37,6 @@ First public edition.
 - Five figures
 - Format: PDF, English (Oxford spelling)
 
-[Unreleased]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/compare/v1.1...HEAD
+[v1.2]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.2
 [v1.1]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.1
 [v1.0]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.0
