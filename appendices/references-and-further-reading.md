@@ -29,7 +29,7 @@ The framework in this book is the author’s synthesis of operational experience
 - RabbitMQ, *Monitoring* (Chapter 8). https://www.rabbitmq.com/docs/monitoring
 - Galera Cluster documentation, *Weighted Quorum* (quorum and the non-Primary state; Chapter 10). https://galeracluster.com/library/documentation/weighted-quorum.html
 - Galera Cluster documentation, *Crash Recovery* (bootstrapping from the most advanced node; Chapter 10). https://galeracluster.com/library/documentation/crash-recovery.html
-- Galera Cluster documentation, *Monitoring the Cluster* (Chapter 8). ht tps://galeracluster.com/library/documentation/monitoring-cluster. html
+- Galera Cluster documentation, *Monitoring the Cluster* (Chapter 8). https://galeracluster.com/library/documentation/monitoring-cluster.html
 - Large Scale SIG documentation, including *The Scaling Journey* (Chapter 5). https://docs.openstack.org/large-scale/
 - OpenStack Operations Guide. Last substantially updated in 2017; historically valuable, no longer current. https://docs.openstack.org/operations-guide/
 
