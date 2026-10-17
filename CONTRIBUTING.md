@@ -2,7 +2,7 @@
 
 Thank you for taking the time to improve this book.
 
-This repository distributes a finished, single-author book, as a PDF and as Markdown (one file per chapter under `chapters/` and `appendices/`). Contributions take the form of **feedback through issues**: the text remains the author's, and every change to it goes through a published version.
+This repository distributes a finished, single-author book, as a PDF and as Markdown (one file per chapter under `chapters/` and `appendices/`), together with its French edition (`fr/`). Contributions take the form of **feedback through issues**: the text remains the author's, and every change to it goes through a published version.
 
 ## What is welcome
 
@@ -14,14 +14,19 @@ This repository distributes a finished, single-author book, as a PDF and as Mark
 
 1. Check the [open issues](https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/issues) to avoid duplicates.
 2. Open a new issue using the appropriate template (*Errata* or *Suggestion*).
-3. Indicate the **book version** (see `CHANGELOG.md`; printed on the title page of the PDF) and the **page** (PDF) or the **chapter file and section** (Markdown).
+3. Indicate the **book version** (see `CHANGELOG.md`; printed on the title page of the PDF), the **edition** (English or French) and the **page** (PDF) or the **chapter file and section** (Markdown).
 4. For a technical objection, please give your reasoning and, where possible, a primary source (official OpenStack documentation, specs, release notes).
+5. For the French edition, a translation that is inaccurate, unclear or inconsistent with the terminology of [`fr/STYLE.md`](fr/STYLE.md) is an erratum like any other.
 
 Every issue is read. Corrections that are confirmed are credited in the release notes of the version that integrates them (unless you prefer not to be credited).
 
 ## Pull requests
 
 Pull requests are accepted for the files of this repository itself (README, changelog, templates) and for small, unambiguous corrections to the Markdown text (a typo, a broken link, a formatting glitch). Anything that changes the meaning of the text — a technical correction, a rewording, an addition — is handled through issues, so that it can be discussed and integrated into a versioned release of both the Markdown and the PDF.
+
+## The two editions
+
+The English text is the reference. A correction that changes the meaning of a passage is made in the English file first and then carried into the French file with the same chapter number or appendix letter (the mapping is in [`fr/STYLE.md`](fr/STYLE.md)), in the same commit or in the next one, so that the two editions never drift apart. A correction specific to the French wording touches only the French file. `python3 tools/check_editions.py` verifies that the two editions still have the same structure; the build workflow runs it before building the PDFs.
 
 ## Scope and tone
 

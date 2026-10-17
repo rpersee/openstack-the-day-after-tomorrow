@@ -9,6 +9,16 @@ Versioning scheme:
 - **Minor** (`v1.1`): revised or expanded sections, new figures, corrections that change the technical content.
 - Simple typo fixes are batched into the next minor version rather than released on their own.
 
+## [Unreleased]
+
+French edition of the book, *OpenStack, après-demain : exploiter des plateformes OpenStack critiques*, maintained in this repository alongside the original. Same text, same structure, same version number.
+
+- The full French text under `fr/` (`fr/chapters/`, `fr/appendices/`), one Markdown file per chapter, with the same chapter numbers and appendix letters as the English files, a French table of contents (`fr/README.md`) and an editorial guide fixing the method and the terminology (`fr/STYLE.md`).
+- The five figures redrawn with French labels (`assets/figures/fr/`), generated from the English SVG files by `tools/figures/`, which keeps the drawing and replaces the text.
+- The French PDF, `openstack-the-day-after-tomorrow-fr.pdf`, built by the same toolchain (`tools/pdf/build.sh fr`), verified by the same checks, and published with every release alongside the English PDF. Same page size, fonts and layout.
+- `tools/check_editions.py` verifies that the two editions stay in step (files, headings, boxed passages, figures, tables, code, links, cross-references, French typography); the workflow runs it before building.
+- English text: the URL of the Galera *Monitoring the Cluster* reference is corrected (it contained stray spaces).
+
 ## [v1.1] — 2026-09-30
 
 First edition whose PDF is generated automatically from the Markdown sources, by GitHub Actions (pandoc + XeLaTeX). Same text as v1.0.
@@ -27,5 +37,6 @@ First public edition.
 - Five figures
 - Format: PDF, English (Oxford spelling)
 
+[Unreleased]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/compare/v1.1...HEAD
 [v1.1]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.1
 [v1.0]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.0
