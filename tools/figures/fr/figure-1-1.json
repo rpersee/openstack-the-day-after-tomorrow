@@ -1,0 +1,169 @@
+{
+  "sets": {
+    "0": {
+      "weight": "bold",
+      "anchor": "start"
+    },
+    "1": {
+      "weight": "bold"
+    },
+    "2": {},
+    "3": {
+      "weight": "bold"
+    },
+    "4": {},
+    "5": {
+      "style": "italic",
+      "anchor": "start"
+    },
+    "6": {
+      "weight": "bold",
+      "anchor": "start"
+    },
+    "7": {
+      "style": "italic",
+      "anchor": "start"
+    }
+  },
+  "lines": {
+    "0": {
+      "text": "PLAN DE CONTRÔLE"
+    },
+    "1": {
+      "text": "Services d’API"
+    },
+    "2": {
+      "text": "Keystone, Nova, Neutron,"
+    },
+    "3": {
+      "text": "Cinder, Glance, Placement"
+    },
+    "4": {
+      "text": "Schedulers"
+    },
+    "5": {
+      "text": "et conductors"
+    },
+    "6": {
+      "text": "Répartiteur,"
+    },
+    "7": {
+      "text": "VIP, memcached"
+    },
+    "8": {
+      "text": "Bus de messages"
+    },
+    "9": {
+      "text": "Cluster RabbitMQ"
+    },
+    "10": {
+      "text": "Bases de données"
+    },
+    "11": {
+      "text": "Cluster MariaDB Galera"
+    },
+    "12": {
+      "text": "PLAN DE DONNÉES"
+    },
+    "13": {
+      "text": "Hôtes de calcul"
+    },
+    "14": {
+      "text": "hyperviseurs et"
+    },
+    "15": {
+      "text": "instances en cours"
+    },
+    "16": {
+      "text": "Agents Neutron /"
+    },
+    "17": {
+      "text": "contrôleurs OVN"
+    },
+    "18": {
+      "text": "Stockage"
+    },
+    "19": {
+      "text": "disques d’instance,",
+      "size": 5.6
+    },
+    "20": {
+      "text": "volumes"
+    },
+    "21": {
+      "text": "Réseau"
+    },
+    "22": {
+      "text": "chemins, DHCP,",
+      "size": 5.8
+    },
+    "23": {
+      "text": "routeurs L3 HA"
+    },
+    "24": {
+      "text": "RPC, rapports des agents, nouvel état"
+    },
+    "25": {
+      "text": "Si le plan de contrôle s’arrête"
+    },
+    "26": {
+      "text": "Perdu"
+    },
+    "27": {
+      "text": "créer, modifier, migrer, supprimer",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "28": {
+      "text": "nouveaux ports, règles de sécurité,",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "29": {
+      "text": "associations d’IP flottantes",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "30": {
+      "text": "métadonnées des instances qui démarrent",
+      "anchor": "start",
+      "size": 6.0
+    },
+    "31": {
+      "text": "ordonnancement et réordonnancement",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "32": {
+      "text": "Continue"
+    },
+    "33": {
+      "text": "les instances en cours",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "34": {
+      "text": "leur stockage et leur trafic",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "35": {
+      "text": "les baux DHCP existants",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "36": {
+      "text": "bascule L3 HA / passerelle OVN",
+      "anchor": "start",
+      "size": 6.3
+    },
+    "37": {
+      "text": "Dépend du backend et du déploiement ;",
+      "size": 6.3
+    },
+    "38": {
+      "text": "à vérifier avant de s’y fier.",
+      "size": 6.3
+    }
+  }
+}

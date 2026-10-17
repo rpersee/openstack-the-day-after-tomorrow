@@ -2,6 +2,12 @@
 """Automatic checks on the generated PDF edition of the book.
 
     tools/pdf/verify_pdf.py build/openstack-the-day-after-tomorrow.pdf [build/openstack-the-day-after-tomorrow.log]
+    tools/pdf/verify_pdf.py build/openstack-the-day-after-tomorrow-fr.pdf [build/openstack-the-day-after-tomorrow-fr.log]
+
+The edition (English or French) is recognised from the PDF file name (a "-fr"
+suffix) or given with --edition en|fr; the expectations that depend on the
+language (title, sources, contents heading, figure captions, table samples)
+come from the EDITIONS table below.
 
 Exit code 0 when every check passes, 1 otherwise. The checks:
 
@@ -30,15 +36,41 @@ try:
 except ImportError:  # pragma: no cover
     import fitz as pymupdf  # older package name
 
-MIN_PAGES, MAX_PAGES = 95, 140         # the v1.0 PDF had 116 pages
+MIN_PAGES, MAX_PAGES = 95, 150         # the v1.0 PDF had 116 pages; French runs ~10 % longer
 PAGE_W, PAGE_H = 481.9, 680.3          # 17 x 24 cm, in points
 MIN_SIZE = 300_000                     # bytes
 EXPECTED_FIGURES = ["1.1", "4.1", "5.1", "14.1", "20.1"]   # captions, numbered by chapter
-TABLE_MARKERS = [
-    "Keep temporarily with an exit condition",         # chapter 15
-    "Weighted score",                                  # chapter 18
-    "What can wait, and until when?",                  # appendix B
-]
+
+EDITIONS = {
+    "en": {
+        "title": "OpenStack, the Day After Tomorrow",
+        "chapters": "chapters", "appendices": "appendices",
+        "front_matter": "00-front-matter.md",
+        "appendix_glob": "appendix-*.md", "references": "references-and-further-reading.md",
+        "heading_re": r"^# (?:Chapter \d+ — |Appendix [A-F] — )?(.+)$",
+        "numbered_re": r"# (Chapter \d+|Appendix [A-F]) — ",
+        "contents": "Contents", "nav_contents": "Contents ·",
+        "table_markers": [
+            "Keep temporarily with an exit condition",         # chapter 15
+            "Weighted score",                                  # chapter 18
+            "What can wait, and until when?",                  # appendix B
+        ],
+    },
+    "fr": {
+        "title": "OpenStack, après-demain",
+        "chapters": "fr/chapters", "appendices": "fr/appendices",
+        "front_matter": "00-pages-liminaires.md",
+        "appendix_glob": "annexe-*.md", "references": "references-et-lectures-complementaires.md",
+        "heading_re": r"^# (?:Chapitre \d+ — |Annexe [A-F] — )?(.+)$",
+        "numbered_re": r"# (Chapitre \d+|Annexe [A-F]) — ",
+        "contents": "Table des matières", "nav_contents": "Sommaire ·",
+        "table_markers": [
+            "Conserver temporairement avec une condition de sortie",   # chapitre 15
+            "Score pondéré",                                           # chapitre 18
+            "Qu'est-ce qui peut attendre, et jusqu'à quand ?",         # annexe B
+        ],
+    },
+}
 
 failures = []
 warnings = []
@@ -61,15 +93,21 @@ def ok(msg):
 def norm(s):
     s = s.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
     s = s.replace("ﬀ", "ff").replace("ﬁ", "fi").replace("ﬂ", "fl").replace("ﬃ", "ffi")
+    s = s.replace("\u00a0", " ").replace("\u202f", " ")
     return re.sub(r"\s+", " ", s)
 
 
 def main():
-    if len(sys.argv) < 2:
+    args = [a for a in sys.argv[1:] if not a.startswith("--edition")]
+    opts = [a for a in sys.argv[1:] if a.startswith("--edition")]
+    if len(args) < 1:
         print(__doc__)
         return 2
-    pdf_path = sys.argv[1]
-    log_path = sys.argv[2] if len(sys.argv) > 2 else None
+    pdf_path = args[0]
+    log_path = args[1] if len(args) > 1 else None
+    edition = opts[0].split("=", 1)[1] if opts and "=" in opts[0] else ("fr" if pdf_path.endswith("-fr.pdf") else "en")
+    E = EDITIONS[edition]
+    print(f"edition: {edition}")
     root = os.path.dirname(os.path.abspath(__file__))
     repo = os.path.abspath(os.path.join(root, "..", ".."))
 
@@ -89,7 +127,7 @@ def main():
         return finish()
     if doc.is_encrypted:
         fail("PDF is encrypted")
-    if doc.metadata.get("title") != "OpenStack, the Day After Tomorrow":
+    if doc.metadata.get("title") != E["title"]:
         fail(f"unexpected PDF title metadata: {doc.metadata.get('title')!r}")
     if doc.metadata.get("author") != "Soufian Zaouam":
         fail(f"unexpected PDF author metadata: {doc.metadata.get('author')!r}")
@@ -110,7 +148,7 @@ def main():
     full = " ".join(pages)
 
     # 3. front matter
-    if "OpenStack, the Day After Tomorrow" not in pages[0] or "Soufian Zaouam" not in pages[0]:
+    if norm(E["title"]) not in pages[0] or "Soufian Zaouam" not in pages[0]:
         fail("title page does not carry the title and the author")
     else:
         ok("title page")
@@ -118,7 +156,8 @@ def main():
         fail("licence notice missing from the copyright page")
     else:
         ok("copyright page with licence")
-    if not any(p.startswith("Contents") or " Contents " in p[:40] for p in pages[2:5]):
+    contents = E["contents"]
+    if not any(p.startswith(contents) or f" {contents} " in p[:60] for p in pages[2:5]):
         fail("table of contents not found in pages 3-5")
     else:
         ok("table of contents")
@@ -129,17 +168,17 @@ def main():
         ok(f"{len(toc)} PDF bookmarks")
 
     # 4. + 5. chapters and their body text, in order
-    sources = (sorted(glob.glob(os.path.join(repo, "chapters", "*.md")))
-               + sorted(glob.glob(os.path.join(repo, "appendices", "appendix-*.md")))
-               + [os.path.join(repo, "appendices", "references-and-further-reading.md")])
+    sources = (sorted(glob.glob(os.path.join(repo, E["chapters"], "*.md")))
+               + sorted(glob.glob(os.path.join(repo, E["appendices"], E["appendix_glob"])))
+               + [os.path.join(repo, E["appendices"], E["references"])])
     last_pos = 0
     for src in sources:
         name = os.path.basename(src)
-        if name == "00-front-matter.md":
+        if name == E["front_matter"]:
             continue
         with open(src, encoding="utf-8") as f:
             md = f.read()
-        m = re.search(r"^# (?:Chapter \d+ — |Appendix [A-F] — )?(.+)$", md, re.M)
+        m = re.search(E["heading_re"], md, re.M)
         title = norm(m.group(1))
         # the first body paragraph (skip headings, part line, tables, quotes, images)
         body = None
@@ -171,12 +210,15 @@ def main():
         ok("no blank page")
 
     # 7. figures: every caption sits on a page that embeds a vector figure
-    #    (a Form XObject with a few hundred drawing paths), captions numbered as expected
+    #    (a Form XObject carrying the boxes and arrows of the drawing: a few
+    #    hundred paths when the text is outlined, as in the English figures,
+    #    a few dozen when it is real text, as in the French ones), captions
+    #    numbered as expected
     caps = []
     for i, p in enumerate(doc):
-        for num in re.findall(r"Figure (\d+\.\d+): ", pages[i]):
+        for num in re.findall(r"Figure (\d+\.\d+)\s?: ", pages[i]):
             caps.append(num)
-            if not p.get_xobjects() or len(p.get_drawings()) < 50:
+            if not p.get_xobjects() or len(p.get_drawings()) < 8:
                 fail(f"page {i+1}: caption of Figure {num} without an embedded figure")
     if caps != EXPECTED_FIGURES:
         fail(f"figure captions {caps} differ from the expected {EXPECTED_FIGURES}")
@@ -184,7 +226,7 @@ def main():
         ok(f"{len(caps)} figures embedded with numbered captions")
 
     # 8. tables
-    for marker in TABLE_MARKERS:
+    for marker in E["table_markers"]:
         if marker not in full:
             fail(f"table content not found: {marker!r}")
     ok("tables present")
@@ -211,10 +253,10 @@ def main():
     for src in sources:
         with open(src, encoding="utf-8") as f:
             first = f.readline().strip()
-        if first.startswith("# ") and re.match(r"# (Chapter \d+|Appendix [A-F]) — ", first) and norm(first[2:]) in full:
+        if first.startswith("# ") and re.match(E["numbered_re"], first) and norm(first[2:]) in full:
             fail(f"raw Markdown heading left in the text: {first[2:]!r}")
     for i, p in enumerate(pages):
-        if re.search(r"\]\([^)]*\.md\)", p) or "Contents ·" in p:
+        if re.search(r"\]\([^)]*\.md\)", p) or E["nav_contents"] in p:
             fail(f"page {i+1}: Markdown navigation link left in the text")
     if log_path and os.path.isfile(log_path):
         with open(log_path, encoding="utf-8", errors="replace") as f:

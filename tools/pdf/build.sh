@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # Build the PDF edition of the book from the Markdown sources.
 #
-#   tools/pdf/build.sh [VERSION]
+#   tools/pdf/build.sh [EDITION] [VERSION]
 #
+# EDITION is "en" (default: the original edition, chapters/ and appendices/)
+# or "fr" (the French edition, fr/chapters/ and fr/appendices/).
 # VERSION is printed on the copyright page (for example "v1.1"). When it is
 # omitted, the build is labelled as a development build with the commit hash.
+# For compatibility, a first argument that is not an edition is taken as the
+# version of the English edition: "build.sh v1.1" is "build.sh en v1.1".
 #
-# Output: build/openstack-the-day-after-tomorrow.pdf (plus the LaTeX sources
-# and logs, in build/, which is ignored by Git).
+# Output: build/openstack-the-day-after-tomorrow.pdf for the English edition,
+# build/openstack-the-day-after-tomorrow-fr.pdf for the French one (plus the
+# LaTeX sources and logs, in build/, which is ignored by Git).
 #
 # Requirements: pandoc (>= 3.1), XeLaTeX (TeX Live with tcolorbox, titlesec,
 # fancyhdr, microtype, enumitem, caption), the TeX Gyre and DejaVu fonts,
@@ -18,6 +23,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+EDITION="en"
+if [[ "${1:-}" == "en" || "${1:-}" == "fr" ]]; then
+  EDITION="$1"; shift
+fi
 VERSION="${1:-${BOOK_VERSION:-}}"
 if [[ -z "$VERSION" ]]; then
   VERSION="development build ($(git rev-parse --short HEAD 2>/dev/null || echo unversioned))"
@@ -29,57 +38,96 @@ BUILD=build
 NAME=openstack-the-day-after-tomorrow
 mkdir -p "$BUILD"
 
+# ---- 0. Edition: sources, metadata, title page, figures ----------------------
+# Both editions share the template, the layout (header.tex) and the Lua filter,
+# which recognises the structural markers of each language (see fr/STYLE.md).
+case "$EDITION" in
+  en)
+    SRC=.
+    METADATA=tools/pdf/metadata.yaml
+    HEADER_EXTRA=()
+    FRONT_MATTER=chapters/00-front-matter.md
+    FIGURES=assets/figures
+    SOURCES=(
+      chapters/00-how-to-read-this-book.md
+      chapters/00-introduction.md
+      chapters/0[1-9]-*.md
+      chapters/1[0-9]-*.md
+      chapters/20-*.md
+      chapters/21-*.md
+      appendices/appendix-[a-f]-*.md
+      appendices/references-and-further-reading.md
+    )
+    TITLE="OpenStack,\\\\ the Day After Tomorrow"
+    SUBTITLE="Operating Mission-Critical OpenStack Platforms"
+    ABOUT="\\textbf{About this edition.} Version \\bookversion, generated on \\bookdate\\ from the
+Markdown sources published at \\url{$REPO_URL}. Corrections and suggestions are
+welcome through the issues of that repository."
+    ;;
+  fr)
+    SRC=fr
+    NAME="$NAME-fr"
+    METADATA=tools/pdf/metadata-fr.yaml
+    HEADER_EXTRA=(--include-in-header tools/pdf/header-fr.tex)
+    FRONT_MATTER=fr/chapters/00-pages-liminaires.md
+    FIGURES=assets/figures/fr
+    SOURCES=(
+      fr/chapters/00-comment-lire-ce-livre.md
+      fr/chapters/00-introduction.md
+      fr/chapters/0[1-9]-*.md
+      fr/chapters/1[0-9]-*.md
+      fr/chapters/20-*.md
+      fr/chapters/21-*.md
+      fr/appendices/annexe-[a-f]-*.md
+      fr/appendices/references-et-lectures-complementaires.md
+    )
+    TITLE="OpenStack,\\\\ après-demain"
+    SUBTITLE="Exploiter des plateformes OpenStack critiques"
+    ABOUT="\\textbf{À propos de cette édition.} Version \\bookversion, générée le \\bookdate\\ à partir des
+sources Markdown publiées à l’adresse \\url{$REPO_URL}. Les corrections et suggestions
+sont les bienvenues dans les issues de ce dépôt."
+    ;;
+esac
+echo "Edition: $EDITION"
+
 # ---- 1. Ordered list of sources ---------------------------------------------
-SOURCES=(
-  chapters/00-how-to-read-this-book.md
-  chapters/00-introduction.md
-  chapters/0[1-9]-*.md
-  chapters/1[0-9]-*.md
-  chapters/20-*.md
-  chapters/21-*.md
-  appendices/appendix-[a-f]-*.md
-  appendices/references-and-further-reading.md
-)
 for f in "${SOURCES[@]}"; do [[ -f "$f" ]] || { echo "missing source: $f" >&2; exit 1; }; done
 echo "Sources: ${#SOURCES[@]} files"
 
-# ---- 2. Version stamp and colophon (copyright page) --------------------------
+# ---- 2. Version stamp, title page and colophon (copyright page) --------------
 cat > "$BUILD/version.tex" <<EOF
 \\newcommand{\\bookversion}{$VERSION}
 \\newcommand{\\bookdate}{$DATE}
+\\newcommand{\\booktitle}{$TITLE}
+\\newcommand{\\booksubtitle}{$SUBTITLE}
 EOF
 
-# The copyright page is the text of chapters/00-front-matter.md between the
-# first horizontal rule (after the title block) and the navigation footer.
-awk 'BEGIN{n=0} /^---$/{n++; next} n==1{print}' chapters/00-front-matter.md \
+# The copyright page is the text of the front-matter file between the first
+# horizontal rule (after the title block) and the navigation footer.
+awk 'BEGIN{n=0} /^---$/{n++; next} n==1{print}' "$FRONT_MATTER" \
   | pandoc -f markdown -t latex -o "$BUILD/colophon-body.tex"
 {
   cat "$BUILD/colophon-body.tex"
-  cat <<EOF
-
-\\vspace{1em}
-\\textbf{About this edition.} Version \\bookversion, generated on \\bookdate\\ from the
-Markdown sources published at \\url{$REPO_URL}. Corrections and suggestions are
-welcome through the issues of that repository.
-EOF
+  printf '\n\\vspace{1em}\n%s\n' "$ABOUT"
 } > "$BUILD/colophon.tex"
 
 # ---- 3. Figures: SVG -> PDF (vector) ------------------------------------------
-mkdir -p "$BUILD/figures"
-for svg in assets/figures/*.svg; do
+rm -rf "$BUILD/figures"; mkdir -p "$BUILD/figures"
+for svg in "$FIGURES"/*.svg; do
   rsvg-convert -f pdf -o "$BUILD/figures/$(basename "${svg%.svg}").pdf" "$svg"
 done
-echo "Figures: $(ls "$BUILD"/figures/*.pdf | wc -l) converted"
+echo "Figures: $(ls "$BUILD"/figures/*.pdf | wc -l) converted from $FIGURES"
 
 # ---- 4. Markdown -> LaTeX -----------------------------------------------------
 pandoc "${SOURCES[@]}" \
   --from markdown+smart+autolink_bare_uris \
   --to latex \
   --template tools/pdf/template.tex \
-  --metadata-file tools/pdf/metadata.yaml \
+  --metadata-file "$METADATA" \
   --include-in-header tools/pdf/header.tex \
+  ${HEADER_EXTRA[@]+"${HEADER_EXTRA[@]}"} \
   --lua-filter tools/pdf/filters/book.lua \
-  --resource-path=.:chapters:appendices \
+  --resource-path=.:"$SRC"/chapters:"$SRC"/appendices \
   --top-level-division=chapter \
   --pdf-engine=xelatex \
   --standalone \

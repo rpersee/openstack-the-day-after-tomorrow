@@ -1,10 +1,12 @@
 name: Build the PDF edition
 
-# Every push to main (and every pull request) rebuilds the PDF from the
-# Markdown sources and verifies it. The PDF is kept as a workflow artifact.
-# A version tag (v1.1, v2.0, ...) additionally publishes the PDF as a GitHub
-# Release, which is the official distribution channel of the book.
-# The workflow can also be run by hand, optionally creating a release.
+# Every push to main (and every pull request) rebuilds the PDF of each edition
+# (English: chapters/, appendices/; French: fr/) from the Markdown sources and
+# verifies it, after checking that the two editions are in step. The PDFs are
+# kept as workflow artifacts. A version tag (v1.1, v2.0, ...) additionally
+# publishes both PDFs as a GitHub Release, which is the official distribution
+# channel of the book. The workflow can also be run by hand, optionally
+# creating a release.
 
 on:
   push:
@@ -30,10 +32,28 @@ env:
   PDF_NAME: openstack-the-day-after-tomorrow
 
 jobs:
+  editions:
+    name: Check that the editions are in step
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the sources
+        uses: actions/checkout@v4
+      - name: Compare the French edition with the original
+        run: python3 tools/check_editions.py
+      - name: Check that the French figures are up to date with their maps
+        run: |
+          for svg in assets/figures/*.svg; do
+            name="$(basename "$svg")"
+            python3 tools/figures/translate_figure.py "$svg" "tools/figures/fr/${name%.svg}.json" "/tmp/$name"
+            cmp "/tmp/$name" "assets/figures/fr/$name" || { echo "assets/figures/fr/$name differs from what tools/figures/fr/${name%.svg}.json produces" >&2; exit 1; }
+          done
+
   build:
     name: Build and verify
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 40
+    needs: editions
     outputs:
       version: ${{ steps.version.outputs.version }}
       release_tag: ${{ steps.version.outputs.release_tag }}
@@ -47,8 +67,8 @@ jobs:
           sudo apt-get update -q
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends \
             pandoc \
-            texlive-xetex texlive-latex-recommended texlive-latex-extra \
-            texlive-fonts-recommended fonts-texgyre lmodern fonts-dejavu-core \
+            texlive-xetex texlive-latex-recommended texlive-latex-extra texlive-lang-french \
+            texlive-fonts-recommended fonts-texgyre lmodern fonts-dejavu-core fonts-liberation \
             librsvg2-bin poppler-utils python3-pip
           pip3 install --quiet --break-system-packages pymupdf
           pandoc --version | head -n 1
@@ -73,33 +93,45 @@ jobs:
           echo "release_tag=$tag" >> "$GITHUB_OUTPUT"
           echo "Version: $version"
 
-      - name: Build the PDF from the Markdown sources
-        run: bash tools/pdf/build.sh "${{ steps.version.outputs.version }}"
+      - name: Build the English PDF from the Markdown sources
+        run: bash tools/pdf/build.sh en "${{ steps.version.outputs.version }}"
 
-      - name: Verify the PDF
+      - name: Verify the English PDF
         run: python3 tools/pdf/verify_pdf.py "build/${PDF_NAME}.pdf" "build/${PDF_NAME}.log"
+
+      - name: Build the French PDF from the Markdown sources
+        run: bash tools/pdf/build.sh fr "${{ steps.version.outputs.version }}"
+
+      - name: Verify the French PDF
+        run: python3 tools/pdf/verify_pdf.py "build/${PDF_NAME}-fr.pdf" "build/${PDF_NAME}-fr.log"
 
       - name: Render preview pages
         run: |
           mkdir -p build/preview
-          pdftoppm -r 60 -png -f 1 -l 4 "build/${PDF_NAME}.pdf" build/preview/front
-          pdftoppm -r 60 -png -f 12 -l 13 "build/${PDF_NAME}.pdf" build/preview/chapter-1
-          pdftoppm -r 60 -png -f 16 -l 16 "build/${PDF_NAME}.pdf" build/preview/figure-1-1
+          for edition in "" "-fr"; do
+            pdftoppm -r 60 -png -f 1 -l 4 "build/${PDF_NAME}${edition}.pdf" "build/preview/front${edition}"
+            pdftoppm -r 60 -png -f 12 -l 13 "build/${PDF_NAME}${edition}.pdf" "build/preview/chapter-1${edition}"
+            pdftoppm -r 60 -png -f 16 -l 17 "build/${PDF_NAME}${edition}.pdf" "build/preview/figure-1-1${edition}"
+          done
           ls build/preview
 
-      - name: Name the PDF after the version
+      - name: Name the PDFs after the version
         id: artifact
         run: |
           tag="${{ steps.version.outputs.release_tag }}"
           suffix="${tag:-main-$(git rev-parse --short HEAD)}"
           cp "build/${PDF_NAME}.pdf" "build/${PDF_NAME}-${suffix}.pdf"
+          cp "build/${PDF_NAME}-fr.pdf" "build/${PDF_NAME}-fr-${suffix}.pdf"
           echo "file=build/${PDF_NAME}-${suffix}.pdf" >> "$GITHUB_OUTPUT"
+          echo "file_fr=build/${PDF_NAME}-fr-${suffix}.pdf" >> "$GITHUB_OUTPUT"
 
-      - name: Upload the PDF as a workflow artifact
+      - name: Upload the PDFs as a workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PDF_NAME }}-pdf
-          path: ${{ steps.artifact.outputs.file }}
+          path: |
+            ${{ steps.artifact.outputs.file }}
+            ${{ steps.artifact.outputs.file_fr }}
           if-no-files-found: error
           retention-days: 90
 
@@ -120,12 +152,15 @@ jobs:
         run: |
           tag="${{ steps.version.outputs.release_tag }}"
           pages="$(pdfinfo "build/${PDF_NAME}.pdf" | awk '/^Pages/{print $2}')"
+          pages_fr="$(pdfinfo "build/${PDF_NAME}-fr.pdf" | awk '/^Pages/{print $2}')"
           {
             echo "**OpenStack, the Day After Tomorrow — Operating Mission-Critical OpenStack Platforms**, ${tag}."
             echo
-            echo "This PDF was generated automatically by GitHub Actions from the Markdown sources of this repository"
-            echo "(commit ${GITHUB_SHA::7}) with pandoc and XeLaTeX, and verified before publication."
-            echo "${pages} pages, English. Licence: CC BY-NC-ND 4.0."
+            echo "Both PDFs were generated automatically by GitHub Actions from the Markdown sources of this repository"
+            echo "(commit ${GITHUB_SHA::7}) with pandoc and XeLaTeX, and verified before publication. Licence: CC BY-NC-ND 4.0."
+            echo
+            echo "- \`${PDF_NAME}-${tag}.pdf\` — English edition, ${pages} pages."
+            echo "- \`${PDF_NAME}-fr-${tag}.pdf\` — édition française, *OpenStack, après-demain*, ${pages_fr} pages."
             echo
             # the section of CHANGELOG.md for this version, when it exists
             awk -v tag="$tag" '
@@ -138,7 +173,8 @@ jobs:
               cat build/changelog-section.md
             fi
             echo
-            echo "Read the book online, chapter by chapter, in the [repository README](https://github.com/${GITHUB_REPOSITORY}#read-the-book-on-github)."
+            echo "Read the book online, chapter by chapter, in the [repository README](https://github.com/${GITHUB_REPOSITORY}#read-the-book-on-github),"
+            echo "or the French edition in [fr/README.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/fr/README.md)."
           } > build/release-notes.md
           cat build/release-notes.md
 
@@ -150,7 +186,9 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: ${{ steps.version.outputs.release_tag }}
           body_path: build/release-notes.md
-          files: ${{ steps.artifact.outputs.file }}
+          files: |
+            ${{ steps.artifact.outputs.file }}
+            ${{ steps.artifact.outputs.file_fr }}
           fail_on_unmatched_files: true
           draft: false
           prerelease: false

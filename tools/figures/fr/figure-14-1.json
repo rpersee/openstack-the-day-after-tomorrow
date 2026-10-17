@@ -1,0 +1,16 @@
+{
+  "sets": {"0": {"weight": "bold", "anchor": "start"}, "1": {"anchor": "start"}, "2": {"style": "italic", "anchor": "start"}, "3": {"style": "italic", "anchor": "start"}},
+  "lines": {
+    "0": {"text": "Local"},
+    "1": {"text": "vos patchs, contournements, automatisations, surcharges de policy"},
+    "2": {"text": "maintenue et testée par vous — gardez cette couche aussi mince que possible"},
+    "3": {"text": "Distribution"},
+    "4": {"text": "série fixée, backports de l’éditeur, outil de déploiement, chemin de mise à niveau, support", "size": 7.6},
+    "5": {"text": "maintenue et testée par l’éditeur"},
+    "6": {"text": "OpenStack upstream"},
+    "7": {"text": "séries de versions (Maintained → Unmaintained → EOL), cadence SLURP, backports"},
+    "8": {"text": "maintenue et testée par la communauté"},
+    "9": {"text": "« Rester aussi proche d’upstream que possible » signifie : savoir dans quelle couche"},
+    "10": {"text": "vit chaque divergence, et qui la porte."}
+  }
+}

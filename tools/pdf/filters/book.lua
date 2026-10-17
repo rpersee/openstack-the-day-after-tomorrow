@@ -12,8 +12,34 @@
 --     tcolorbox environments (defined in header.tex)
 --   * turns "![Figure X.Y](path)" + "*Figure X.Y: caption*" into a real
 --     figure with a caption (LaTeX numbers it X.Y by itself)
+--
+-- The structural markers exist in two languages: English (the original
+-- edition) and French (fr/, see fr/STYLE.md). The language is taken from the
+-- "lang" metadata of the edition (tools/pdf/metadata*.yaml). The French
+-- edition also writes narrow no-break spaces (U+202F) before high punctuation
+-- and inside « »; they become \, in LaTeX because the heading font has no
+-- glyph for them.
 
 local stringify = pandoc.utils.stringify
+
+local MARKERS = {
+  en = {
+    part = "^Part %u+ — ", chapter = "^Chapter %d+ — (.*)$", appendix = "^Appendix %u — (.*)$",
+    appendices = "Appendices", references = "^References",
+    technote = "^Technical note", principle = "^Principle", fromfield = "^From the field",
+    figure = "^Figure %d+%.%d+:", figure_rest = "^Figure %d+%.%d+:%s*(.*)$",
+    appendix_part = "Appendices",
+  },
+  fr = {
+    part = "^Partie %u+ — ", chapter = "^Chapitre %d+ — (.*)$", appendix = "^Annexe %u — (.*)$",
+    appendices = "Annexes", references = "^Références",
+    technote = "^Note technique", principle = "^Principe", fromfield = "^Sur le terrain",
+    figure = "^Figure %d+%.%d+[^:]*:", figure_rest = "^Figure %d+%.%d+[^:]*:%s*(.*)$",
+    appendix_part = "Annexes",
+  },
+}
+local M = MARKERS.en
+local NNBSP = "\u{202F}"
 
 local seen_parts = {}
 local mainmatter_done = false
@@ -21,7 +47,7 @@ local appendix_done = false
 local backmatter_done = false
 
 local function raw(tex)
-  return pandoc.RawBlock("latex", tex)
+  return pandoc.RawBlock("latex", (tex:gsub(NNBSP, "\\,")))
 end
 
 local function is_nav_para(block)
@@ -39,9 +65,9 @@ local function box_kind(bq)
   local lead = first.content[1]
   if not lead or lead.t ~= "Strong" then return nil end
   local label = stringify(lead)
-  if label:match("^Technical note") then return "technote" end
-  if label:match("^Principle") then return "principle" end
-  if label:match("^From the field") then return "fromfield" end
+  if label:match(M.technote) then return "technote" end
+  if label:match(M.principle) then return "principle" end
+  if label:match(M.fromfield) then return "fromfield" end
   return nil
 end
 
@@ -63,7 +89,7 @@ local function figure_from(img_block, cap_para)
   local caption = cap_para.content[1].content        -- inlines inside Emph
   -- strip the "Figure X.Y:" prefix: LaTeX numbers figures itself
   local text = stringify(caption)
-  local rest = text:match("^Figure %d+%.%d+:%s*(.*)$")
+  local rest = text:match(M.figure_rest)
   local cap_inlines
   if rest then
     cap_inlines = pandoc.Inlines(pandoc.Str(rest))
@@ -81,6 +107,8 @@ local function figure_from(img_block, cap_para)
 end
 
 function Pandoc(doc)
+  local lang = doc.meta.lang and stringify(doc.meta.lang) or "en"
+  M = MARKERS[lang:sub(1, 2)] or MARKERS.en
   local out = pandoc.List()
   local blocks = doc.blocks
   local i = 1
@@ -96,32 +124,32 @@ function Pandoc(doc)
 
     -- part lines
     elseif b.t == "Para" and #b.content == 1 and b.content[1].t == "Emph"
-           and stringify(b):match("^Part %u+ — ") then
-      local title = stringify(b):gsub("^Part %u+ — ", "")
+           and stringify(b):match(M.part) then
+      local title = stringify(b):gsub(M.part, "")
       if not seen_parts[title] then
         seen_parts[title] = true
         if not mainmatter_done then out:insert(raw("\\mainmatter")); mainmatter_done = true end
         out:insert(raw("\\part{" .. title .. "}"))
       end
       i = i + 1
-    elseif b.t == "Para" and stringify(b) == "Appendices" then
+    elseif b.t == "Para" and stringify(b) == M.appendices then
       i = i + 1
 
     -- level-1 headings
     elseif b.t == "Header" and b.level == 1 then
       local text = stringify(b)
-      local chap = text:match("^Chapter %d+ — (.*)$")
-      local app = text:match("^Appendix %u — (.*)$")
+      local chap = text:match(M.chapter)
+      local app = text:match(M.appendix)
       if chap then
         out:insert(pandoc.Header(1, pandoc.read(chap, "markdown").blocks[1].content))
       elseif app then
         if not appendix_done then
-          out:insert(raw("\\appendix\n\\part*{Appendices}"))
+          out:insert(raw("\\appendix\n\\part*{" .. M.appendix_part .. "}"))
           appendix_done = true
         end
         out:insert(pandoc.Header(1, pandoc.read(app, "markdown").blocks[1].content))
       else
-        if text:match("^References") and not backmatter_done then
+        if text:match(M.references) and not backmatter_done then
           out:insert(raw("\\backmatter")); backmatter_done = true
         end
         out:insert(raw("\\chapter*{" .. text .. "}\n\\addcontentsline{toc}{chapter}{" .. text .. "}\n\\markboth{" .. text .. "}{" .. text .. "}"))
@@ -139,7 +167,7 @@ function Pandoc(doc)
     -- figures: image paragraph followed by an italic caption paragraph
     elseif first_image(b)
            and nxt and nxt.t == "Para" and #nxt.content == 1 and nxt.content[1].t == "Emph"
-           and stringify(nxt):match("^Figure %d+%.%d+:") then
+           and stringify(nxt):match(M.figure) then
       out:insert(figure_from(b, nxt))
       i = i + 2
 
@@ -149,5 +177,22 @@ function Pandoc(doc)
     end
   end
   doc.blocks = out
+  -- narrow no-break spaces (French punctuation): keep them unbreakable in
+  -- LaTeX without relying on the fonts having the glyph
+  if FORMAT:match("latex") then
+    doc = doc:walk({
+      Str = function(el)
+        if not el.text:find(NNBSP, 1, true) then return nil end
+        local parts = pandoc.List()
+        local first = true
+        for piece in (el.text .. NNBSP):gmatch("(.-)" .. NNBSP) do
+          if not first then parts:insert(pandoc.RawInline("latex", "\\,")) end
+          if piece ~= "" then parts:insert(pandoc.Str(piece)) end
+          first = false
+        end
+        return parts
+      end,
+    })
+  end
   return doc
 end
