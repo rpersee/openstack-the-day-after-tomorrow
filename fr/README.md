@@ -131,8 +131,9 @@ Le déploiement est le début du parcours opérationnel, pas sa fin. Les leçons
 
 | | |
 |---|---|
-| **Version** | la même que l’édition anglaise (voir [CHANGELOG.md](../CHANGELOG.md)) ; l’édition française paraît à partir de la version qui suit v1.1 |
-| **Format** | PDF (français), environ 125 pages · Markdown (ce dépôt) |
+| **Version courante** | v1.2 |
+| **Publication** | octobre 2026 |
+| **Format** | PDF (français), 125 pages · Markdown (ce dépôt) |
 | **Télécharger** | **[Dernière version →](https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/latest)** |
 
 Les PDF sont distribués exclusivement sur la page [Releases](https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases) de ce dépôt ; chaque version porte les deux éditions (`openstack-the-day-after-tomorrow-vX.Y.pdf` et `openstack-the-day-after-tomorrow-fr-vX.Y.pdf`). Chaque version est taguée, datée et accompagnée de notes de version. Les versions précédentes restent disponibles. Voir [CHANGELOG.md](../CHANGELOG.md) pour l’historique des changements.
