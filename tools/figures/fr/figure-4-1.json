@@ -1,0 +1,76 @@
+{
+  "sets": {
+    "0": {
+      "weight": "bold"
+    },
+    "1": {
+      "style": "italic"
+    },
+    "2": {
+      "weight": "bold"
+    },
+    "3": {
+      "style": "italic"
+    },
+    "4": {}
+  },
+  "lines": {
+    "0": {
+      "text": "Observer"
+    },
+    "1": {
+      "text": "Comprendre",
+      "size": 6.6
+    },
+    "2": {
+      "text": "Prioriser"
+    },
+    "3": {
+      "text": "Décider"
+    },
+    "4": {
+      "text": "Agir"
+    },
+    "5": {
+      "text": "Vérifier"
+    },
+    "6": {
+      "text": "Apprendre"
+    },
+    "7": {
+      "text": "le résultat d’un cycle change les conditions de départ du suivant"
+    },
+    "8": {
+      "text": "Visibilité"
+    },
+    "9": {
+      "text": "les preuves et leur sens"
+    },
+    "10": {
+      "text": "Gouvernance"
+    },
+    "11": {
+      "text": "impact métier, droits de décision"
+    },
+    "12": {
+      "text": "Stabilité"
+    },
+    "13": {
+      "text": "action bornée, vérification"
+    },
+    "14": {
+      "text": "Organisation"
+    },
+    "15": {
+      "text": "savoir conservé"
+    },
+    "16": {
+      "text": "Quatre capacités alimentent la boucle ; la boucle est ce qui en fait un comportement.",
+      "anchor": "start"
+    },
+    "17": {
+      "text": "L’organisation porte aussi chaque autre étape : aucune ne survit à ceux qui l’exécutent si la connaissance n’est pas conservée.",
+      "anchor": "start"
+    }
+  }
+}
