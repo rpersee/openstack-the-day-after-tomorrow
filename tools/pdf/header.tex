@@ -26,7 +26,7 @@
 \setcounter{secnumdepth}{0}                       % chapters numbered, sections not
 \titleformat{\part}[display]
   {\centering\sffamily\bfseries}
-  {\Large Part \thepart}{1.5em}{\huge}
+  {\Large \partname~\thepart}{1.5em}{\huge}
 \titleformat{\chapter}[display]
   {\sffamily\bfseries\raggedright}
   {\Large\chaptertitlename\ \thechapter}{0.6em}{\huge}
@@ -80,18 +80,21 @@
 \PassOptionsToPackage{bookmarksdepth=2,bookmarksopen=true,bookmarksopenlevel=1}{hyperref}
 
 % ---- Title page and colophon ------------------------------------------------
-% \bookversion and \bookdate are written by build.sh into build/version.tex
+% \bookversion, \bookdate, \booktitle and \booksubtitle are written by build.sh
+% into build/version.tex (the title and subtitle depend on the edition).
 \IfFileExists{build/version.tex}{\input{build/version.tex}}{%
   \providecommand{\bookversion}{development build}%
   \providecommand{\bookdate}{\today}}
+\providecommand{\booktitle}{OpenStack,\\ the Day After Tomorrow}
+\providecommand{\booksubtitle}{Operating Mission-Critical OpenStack Platforms}
 
 \newcommand{\booktitlepage}{%
   \begin{titlepage}
     \thispagestyle{empty}
     \vspace*{4.5cm}
-    {\sffamily\bfseries\fontsize{26}{32}\selectfont OpenStack,\\ the Day After Tomorrow\par}
+    {\sffamily\bfseries\fontsize{26}{32}\selectfont \booktitle\par}
     \vspace{1.2cm}
-    {\sffamily\fontsize{13.4}{17}\selectfont Operating Mission-Critical OpenStack Platforms\par}
+    {\sffamily\fontsize{13.4}{17}\selectfont \booksubtitle\par}
     \vfill
     {\sffamily\fontsize{10.7}{13}\selectfont Soufian Zaouam\par}
     \vspace{2cm}

@@ -1,0 +1,14 @@
+% ---------------------------------------------------------------------------
+% French edition: layout adjustments, loaded after header.tex.
+% pandoc declares the language with \babelprovide[main,import]{french}, which
+% takes the French names (Partie, Chapitre, Annexe, Table des matières) and the
+% hyphenation patterns from babel's locale files without loading babel-french's
+% typographic extensions. The French punctuation spacing therefore comes from
+% the Markdown sources themselves (narrow no-break spaces, which the Lua filter
+% turns into \,), and only the figure caption needs a French colon.
+% ---------------------------------------------------------------------------
+\DeclareCaptionLabelSeparator{frcolon}{\,: }
+\captionsetup{labelsep=frcolon}
+% babel's French locale spells the part label in lower case ("partie I"); the
+% part pages of the book carry it capitalised, like "Chapitre" and "Annexe".
+\AtBeginDocument{\renewcommand{\partname}{Partie}}

@@ -1,0 +1,16 @@
+# Pandoc metadata for the French PDF edition. Used by tools/pdf/build.sh fr.
+title: "OpenStack, après-demain"
+subtitle: "Exploiter des plateformes OpenStack critiques"
+author: "Soufian Zaouam"
+lang: fr-FR
+subject: "Exploiter des plateformes OpenStack critiques en production (exploitation Day 2)"
+keywords: [OpenStack, exploitation Day 2, cloud privé, ingénierie de plateforme, fiabilité, gouvernance]
+
+documentclass: book
+classoption: [openany, twoside]
+fontsize: 11pt
+toc: true
+toc-depth: 0
+toc-title: Table des matières
+colorlinks: false
+links-as-notes: false
