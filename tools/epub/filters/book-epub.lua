@@ -89,8 +89,7 @@ local function figure_from(img_block, cap_para)
   else
     cap_inlines = caption
   end
-  -- For EPUB, keep the original SVG path; pandoc will embed it
-  img = pandoc.Image(stringify(img.src), pandoc.Inlines({}), pandoc.Attr("", {}, {{"width", "100%"}}))
+  -- Preserve original image; pandoc embeds SVG automatically for EPUB
   local fig = pandoc.Figure({pandoc.Plain({img})}, {long = {pandoc.Plain(cap_inlines)}})
   return fig
 end
