@@ -117,7 +117,7 @@ function Pandoc(doc)
       local title = stringify(b):gsub(M.part, "")
       if not seen_parts[title] then
         seen_parts[title] = true
-        local section = pandoc.Div(pandoc.List{b}, pandoc.Attr("part-" .. title:gsub("%s+", "-"):lower(), {"part"}))
+        local section = pandoc.Div(pandoc.List{b}, pandoc.Attr("part-" .. title:gsub("%s+", "-"):lower(), {"part"}, {}))
         out:insert(section)
       end
       i = i + 1
@@ -137,7 +137,7 @@ function Pandoc(doc)
         -- Appendix: add appendix section marker before first appendix
         if not appendix_done then
           appendix_done = true
-          local sec = pandoc.Div(pandoc.List{pandoc.Header(1, pandoc.Str(M.appendix_part))}, pandoc.Attr("", {"appendix-part"}))
+          local sec = pandoc.Div(pandoc.List{pandoc.Header(1, pandoc.Str(M.appendix_part))}, pandoc.Attr("", {"appendix-part"}, {}))
           out:insert(sec)
         end
         local new_header = pandoc.Header(1, pandoc.read(app, "markdown").blocks[1].content)
