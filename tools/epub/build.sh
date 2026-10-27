@@ -102,6 +102,8 @@ fi
 pandoc "${FULL_SOURCES[@]}" \
   --from markdown+smart+autolink_bare_uris \
   --to epub \
+  --toc \
+  --toc-depth=2 \
   --metadata-file "$METADATA" \
   --lua-filter tools/epub/filters/book-epub.lua \
   --resource-path=.:"$SRC"/chapters:"$SRC"/appendices \

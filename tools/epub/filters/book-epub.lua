@@ -114,7 +114,10 @@ function Pandoc(doc)
       local title = stringify(b):gsub(M.part, "")
       if not seen_parts[title] then
         seen_parts[title] = true
-        local sec = pandoc.Div(pandoc.List{pandoc.Header(1, pandoc.Str(title))})
+        local sec = pandoc.Div(
+          pandoc.List{pandoc.Header(1, pandoc.Str(title))},
+          pandoc.Attr("", {"part"}, {})
+        )
         out:insert(sec)
       end
       i = i + 1
@@ -148,8 +151,11 @@ function Pandoc(doc)
     -- boxed passages: turn into blockquote with class
     elseif b.t == "BlockQuote" and box_kind(b) then
       local kind = box_kind(b)
-      local new_bq = pandoc.BlockQuote(b.content, pandoc.Attr("", {kind}, {}))
-      out:insert(new_bq)
+      local wrapper = pandoc.Div(
+        pandoc.List{pandoc.BlockQuote(b.content)},
+        pandoc.Attr("", {kind}, {})
+      )
+      out:insert(wrapper)
       i = i + 1
 
     -- figures: image paragraph followed by an italic caption paragraph
