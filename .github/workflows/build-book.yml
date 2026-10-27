@@ -105,6 +105,12 @@ jobs:
       - name: Verify the French PDF
         run: python3 tools/pdf/verify_pdf.py "build/${PDF_NAME}-fr.pdf" "build/${PDF_NAME}-fr.log"
 
+      - name: Build the English EPUB from the Markdown sources
+        run: bash tools/epub/build.sh en "${{ steps.version.outputs.version }}"
+
+      - name: Build the French EPUB from the Markdown sources
+        run: bash tools/epub/build.sh fr "${{ steps.version.outputs.version }}"
+
       - name: Render preview pages
         run: |
           mkdir -p build/preview
@@ -122,8 +128,12 @@ jobs:
           suffix="${tag:-main-$(git rev-parse --short HEAD)}"
           cp "build/${PDF_NAME}.pdf" "build/${PDF_NAME}-${suffix}.pdf"
           cp "build/${PDF_NAME}-fr.pdf" "build/${PDF_NAME}-fr-${suffix}.pdf"
+          cp "build/${PDF_NAME}.epub" "build/${PDF_NAME}-${suffix}.epub"
+          cp "build/${PDF_NAME}-fr.epub" "build/${PDF_NAME}-fr-${suffix}.epub"
           echo "file=build/${PDF_NAME}-${suffix}.pdf" >> "$GITHUB_OUTPUT"
           echo "file_fr=build/${PDF_NAME}-fr-${suffix}.pdf" >> "$GITHUB_OUTPUT"
+          echo "file_epub=build/${PDF_NAME}-${suffix}.epub" >> "$GITHUB_OUTPUT"
+          echo "file_epub_fr=build/${PDF_NAME}-fr-${suffix}.epub" >> "$GITHUB_OUTPUT"
 
       - name: Upload the PDFs as a workflow artifact
         uses: actions/upload-artifact@v4
@@ -134,6 +144,16 @@ jobs:
             ${{ steps.artifact.outputs.file_fr }}
           if-no-files-found: error
           retention-days: 90
+
+      - name: Upload the EPUBs as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PDF_NAME }}-epub
+          path: |
+            ${{ steps.artifact.outputs.file_epub }}
+            ${{ steps.artifact.outputs.file_epub_fr }}
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload the preview pages and build logs
         uses: actions/upload-artifact@v4
@@ -156,11 +176,13 @@ jobs:
           {
             echo "**OpenStack, the Day After Tomorrow — Operating Mission-Critical OpenStack Platforms**, ${tag}."
             echo
-            echo "Both PDFs were generated automatically by GitHub Actions from the Markdown sources of this repository"
+            echo "Both PDFs and EPUBs were generated automatically by GitHub Actions from the Markdown sources of this repository"
             echo "(commit ${GITHUB_SHA::7}) with pandoc and XeLaTeX, and verified before publication. Licence: CC BY-NC-ND 4.0."
             echo
             echo "- \`${PDF_NAME}-${tag}.pdf\` — English edition, ${pages} pages."
             echo "- \`${PDF_NAME}-fr-${tag}.pdf\` — édition française, *OpenStack, après-demain*, ${pages_fr} pages."
+            echo "- \`${PDF_NAME}-${tag}.epub\` — English edition (reflowable)."
+            echo "- \`${PDF_NAME}-fr-${tag}.epub\` — French edition (reflowable)."
             echo
             # the section of CHANGELOG.md for this version, when it exists
             awk -v tag="$tag" '
@@ -189,6 +211,8 @@ jobs:
           files: |
             ${{ steps.artifact.outputs.file }}
             ${{ steps.artifact.outputs.file_fr }}
+            ${{ steps.artifact.outputs.file_epub }}
+            ${{ steps.artifact.outputs.file_epub_fr }}
           fail_on_unmatched_files: true
           draft: false
           prerelease: false
