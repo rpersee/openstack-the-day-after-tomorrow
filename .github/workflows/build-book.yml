@@ -111,6 +111,12 @@ jobs:
       - name: Build the French EPUB from the Markdown sources
         run: bash tools/epub/build.sh fr "${{ steps.version.outputs.version }}"
 
+      - name: Verify the English EPUB
+        run: python3 tools/epub/verify_epub.py build/openstack-the-day-after-tomorrow.epub
+
+      - name: Verify the French EPUB
+        run: python3 tools/epub/verify_epub.py build/openstack-the-day-after-tomorrow-fr.epub
+
       - name: Render preview pages
         run: |
           mkdir -p build/preview

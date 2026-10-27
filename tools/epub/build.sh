@@ -78,14 +78,28 @@ esac
 echo "Edition: $EDITION"
 
 # ---- 1. Ordered list of sources ---------------------------------------------
-for f in "${SOURCES[@]}"; do [[ -f "$f" ]] || { echo "missing source: $f" >&2; exit 1; }; done
-echo "Sources: ${#SOURCES[@]} files"
+# Include front matter first so the licence/legal text appears before reading.
+FULL_SOURCES=("$FRONT_MATTER" "${SOURCES[@]}")
+for f in "${FULL_SOURCES[@]}"; do [[ -f "$f" ]] || { echo "missing source: $f" >&2; exit 1; }; done
+echo "Sources: ${#FULL_SOURCES[@]} files (with front matter)"
+
+# Completeness: every expected chapter/appendix/reference file must be selected.
+EXPECTED=0
+for f in chapters/00-*.md chapters/0[1-9]-*.md chapters/1[0-9]-*.md chapters/20-*.md chapters/21-*.md appendices/appendix-[a-f]-*.md appendices/references-and-further-reading.md; do
+  [[ -f "$f" ]] || continue
+  EXPECTED=$((EXPECTED+1))
+done
+SELECTED=${#FULL_SOURCES[@]}
+# Allow front matter + reading guide + intro + 21 chapters + 6 appendices + references = ~31
+if [[ "$SELECTED" -lt 25 ]]; then
+  echo "WARNING: only $SELECTED source files selected (expected at least ~25)" >&2
+fi
 
 # ---- 2. Markdown -> EPUB -----------------------------------------------------
 # Uses the EPUB Lua filter for HTML structural transforms (parts, chapters,
 # boxed passages, figures). Figures are embedded as images (pandoc converts
 # SVG to PNG for EPUB).
-pandoc "${SOURCES[@]}" \
+pandoc "${FULL_SOURCES[@]}" \
   --from markdown+smart+autolink_bare_uris \
   --to epub \
   --metadata-file "$METADATA" \
@@ -96,6 +110,7 @@ pandoc "${SOURCES[@]}" \
   --metadata author="Soufian Zaouam" \
   --metadata date="$DATE" \
   --metadata version="$VERSION" \
+  --css=tools/epub/epub.css \
   --output "$BUILD/$NAME.epub"
 
 echo "Built $BUILD/$NAME.epub ($(du -h "$BUILD/$NAME.epub" | cut -f1), $VERSION)"

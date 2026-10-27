@@ -11,9 +11,11 @@ Versioning scheme:
 
 ## [Unreleased]
 
-EPUB editions of the book, built alongside the PDFs with the same toolchain
-(pandoc + a custom Lua filter), published with every release alongside the
-English and French PDFs.
+EPUB editions of the book, built alongside the PDFs with pandoc and a custom
+Lua filter (`tools/epub/`), published with every release alongside the
+English and French PDFs. The EPUB is reflowable (no fixed page size), with
+no cover and no page numbers, matching the author's vision: a standard,
+accessible EPUB 3.
 
 - The full text is published in this repository as Markdown, one file per chapter (`chapters/`, `appendices/`), with the five figures as SVG (`assets/figures/`). Readable directly on GitHub.
 - The EPUB is rebuilt and verified on every push (`tools/epub/`, `.github/workflows/build-book.yml`); a version tag publishes it as a release.

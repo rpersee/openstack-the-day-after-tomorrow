@@ -107,8 +107,6 @@ function Pandoc(doc)
     -- navigation footer: HorizontalRule followed by a paragraph of .md links
     if b.t == "HorizontalRule" and nxt and is_nav_para(nxt) then
       i = i + 2
-    elseif is_nav_para(b) then
-      i = i + 1
 
     -- part lines: turn into <section class="part"><h1>Title</h1>
     elseif b.t == "Para" and #b.content == 1 and b.content[1].t == "Emph"
@@ -116,8 +114,8 @@ function Pandoc(doc)
       local title = stringify(b):gsub(M.part, "")
       if not seen_parts[title] then
         seen_parts[title] = true
-        local section = pandoc.Div(pandoc.List{b})
-        out:insert(section)
+        local sec = pandoc.Div(pandoc.List{pandoc.Header(1, pandoc.Str(title))})
+        out:insert(sec)
       end
       i = i + 1
     elseif b.t == "Para" and stringify(b) == M.appendices then
@@ -129,18 +127,15 @@ function Pandoc(doc)
       local chap = text:match(M.chapter)
       local app = text:match(M.appendix)
       if chap then
-        -- Chapter: keep as h1 with "Chapter N — " prefix
-        local new_header = pandoc.Header(1, pandoc.read(chap, "markdown").blocks[1].content)
-        out:insert(new_header)
+        -- Chapter: keep full heading with number/label
+        out:insert(pandoc.Header(1, pandoc.read(text, "markdown").blocks[1].content))
       elseif app then
         -- Appendix: add appendix section marker before first appendix
         if not appendix_done then
           appendix_done = true
-          local sec = pandoc.Div(pandoc.List{pandoc.Header(1, pandoc.Str(M.appendix_part))})
-          out:insert(sec)
+          out:insert(pandoc.Header(1, pandoc.Str(M.appendix_part)))
         end
-        local new_header = pandoc.Header(1, pandoc.read(app, "markdown").blocks[1].content)
-        out:insert(new_header)
+        out:insert(pandoc.Header(1, pandoc.read(text, "markdown").blocks[1].content))
       else
         -- Other level-1 headings (References, etc.)
         if text:match(M.references) and not backmatter_done then
