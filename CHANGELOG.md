@@ -9,6 +9,18 @@ Versioning scheme:
 - **Minor** (`v1.1`): revised or expanded sections, new figures, corrections that change the technical content.
 - Simple typo fixes are batched into the next minor version rather than released on their own.
 
+## [Unreleased]
+
+EPUB editions of the book, built alongside the PDFs with pandoc and a custom
+Lua filter (`tools/epub/`), published with every release alongside the
+English and French PDFs. The EPUB is reflowable (no fixed page size), with
+no cover and no page numbers, matching the author's vision: a standard,
+accessible EPUB 3.
+
+- The full text is published in this repository as Markdown, one file per chapter (`chapters/`, `appendices/`), with the five figures as SVG (`assets/figures/`). Readable directly on GitHub.
+- The EPUB is rebuilt and verified on every push (`tools/epub/`, `.github/workflows/build-book.yml`); a version tag publishes it as a release.
+- The EPUB is reflowable (no fixed page size), with no cover and no page numbers, matching the author's vision: a standard, accessible EPUB 3.
+
 ## [v1.3] — 2026-10-25
 
 Technical correction to Chapter 20, in both editions.
@@ -44,6 +56,7 @@ First public edition.
 - Five figures
 - Format: PDF, English (Oxford spelling)
 
+[Unreleased]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases
 [v1.2]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.2
 [v1.1]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.1
 [v1.0]: https://github.com/soufian-zaouam/openstack-the-day-after-tomorrow/releases/tag/v1.0

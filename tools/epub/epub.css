@@ -1,0 +1,55 @@
+/* EPUB stylesheet for OpenStack, the Day After Tomorrow — reflowable, no cover */
+body {
+  font-family: "TeX Gyre Pagella", Georgia, serif;
+  line-height: 1.5;
+  color: #222;
+  max-width: 42em;
+  margin: 0 auto;
+  padding: 1.5em 1em;
+}
+h1, h2, h3 {
+  font-family: "TeX Gyre Heros", sans-serif;
+  line-height: 1.2;
+  color: #202a35;
+  margin-top: 1.8em;
+  margin-bottom: 0.6em;
+}
+h1 { font-size: 1.6em; border-bottom: 1px solid #9aa3ad; padding-bottom: 0.2em; }
+h2 { font-size: 1.25em; }
+h3 { font-size: 1.05em; }
+
+/* Part headings */
+.part h1 { font-size: 1.8em; border-bottom: 2px solid #596675; }
+
+/* Boxed passages */
+div.technote, div.principle, div.fromfield {
+  margin: 1em 0;
+  padding: 0.25em 0.9em;
+  border-left: 3px solid #737d88;
+  background: #f5f6f7;
+}
+div.principle { background: #fff; border-left-color: #424c58; }
+div.fromfield { background: #f2f5f8; border-left-color: #627b96; }
+div.technote blockquote, div.principle blockquote, div.fromfield blockquote {
+  margin: 0.5em 0;
+}
+div.technote p, div.principle p, div.fromfield p { margin: 0.4em 0; }
+
+/* Figures */
+figure { margin: 1.2em 0; text-align: center; }
+figure img { max-width: 100%; height: auto; }
+figcaption { font-size: 0.9em; color: #333; margin-top: 0.4em; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+th, td { padding: 0.4em 0.6em; border: 1px solid #aeb5bd; text-align: left; }
+th { background: #e9ecef; color: #202a35; }
+
+/* Navigation links (only chapter footer links are removed by the filter) */
+a { color: #405d7a; text-decoration: underline; }
+
+nav#TOC ol { padding-left: 1.4em; }
+nav#TOC li { margin: 0.35em 0; }
+
+/* Small adjustments for French typography */
+:lang(fr) { quotes: "« " " »"; }
