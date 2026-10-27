@@ -90,7 +90,7 @@ local function figure_from(img_block, cap_para)
     cap_inlines = caption
   end
   -- For EPUB, keep the original SVG path; pandoc will embed it
-  img.attr = pandoc.Attr("", {}, {width = "100%"})
+  img = pandoc.Image(stringify(img.src), pandoc.Inlines({}), pandoc.Attr("", {}, {{"width", "100%"}}))
   local fig = pandoc.Figure({pandoc.Plain({img})}, {long = {pandoc.Plain(cap_inlines)}})
   return fig
 end
@@ -154,8 +154,7 @@ function Pandoc(doc)
     -- boxed passages: turn into blockquote with class
     elseif b.t == "BlockQuote" and box_kind(b) then
       local kind = box_kind(b)
-      local new_bq = pandoc.BlockQuote(b.content)
-      new_bq.attr = pandoc.Attr("", {kind}, {})
+      local new_bq = pandoc.BlockQuote(b.content, pandoc.Attr("", {kind}, {}))
       out:insert(new_bq)
       i = i + 1
 
